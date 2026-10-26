@@ -1,0 +1,13 @@
+{
+  "name": "fish-tankfully",
+  "version": "0.1.0",
+  "description": "Fish Tankfully (缸好有鱼) v0.1 — 3D Desktop Idle Aquarium & Ecosystem Simulator",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node verify_clone.mjs"
+  },
+  "dependencies": {
+    "three": "^0.170.0"
+  }
+}

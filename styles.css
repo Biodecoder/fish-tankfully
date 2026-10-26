@@ -1,0 +1,1983 @@
+/* Fish Tankfully (缸好有鱼) — Authentic Halftone, Comic Outline & DSLR UI Styles */
+
+:root {
+  --ink-border: #17211e;
+  --mint-top: #2dd4bf;
+  --lime-top: #74d14c;
+  --panel-cream: #edf7f2;
+  --panel-sky: #ccecf5;
+  --gold-star: #facc15;
+  --orange-back: #ea580c;
+  --cyan-glow: #38bdf8;
+}
+
+* {
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #231e18;
+  font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+  color: #1e293b;
+}
+
+.hidden {
+  display: none !important;
+}
+
+#viewport-container {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+}
+
+#tank-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#dof-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: box-shadow 0.25s ease, backdrop-filter 0.25s ease;
+}
+
+/* Floating Action Banner (清洁 CLEAN UP / 喂食 FEEDING) */
+#action-banner {
+  position: absolute;
+  left: 50%;
+  bottom: 118px;
+  transform: translateX(-50%);
+  font-size: 44px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  color: #ffffff;
+  text-shadow: 0 0 18px rgba(56, 189, 248, 0.95), 0 4px 12px rgba(0, 0, 0, 0.65);
+  pointer-events: none;
+  z-index: 25;
+  animation: bannerPulse 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes bannerPulse {
+  from { transform: translateX(-50%) scale(0.97); opacity: 0.88; }
+  to { transform: translateX(-50%) scale(1.03); opacity: 1; }
+}
+
+/* ============================================================================
+   1. TITLE SCREEN OVERLAY (Matches frame_02)
+   ============================================================================ */
+.overlay-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  padding-left: 6vw;
+  background: linear-gradient(90deg, rgba(24, 19, 14, 0.58) 0%, rgba(24, 19, 14, 0.15) 48%, rgba(0, 0, 0, 0) 100%);
+  pointer-events: none;
+}
+
+.title-left-column {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 390px;
+}
+
+.logo-emblem {
+  text-align: center;
+  color: #fff;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.45));
+}
+
+.logo-bowl-frame {
+  border: 5px solid rgba(255, 255, 255, 0.92);
+  border-radius: 36px 36px 52px 52px;
+  padding: 14px 28px 18px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(4px);
+  position: relative;
+}
+
+.logo-fish-badge {
+  position: absolute;
+  top: -18px;
+  right: 22px;
+  font-size: 32px;
+}
+
+.logo-zh {
+  margin: 0;
+  font-size: 56px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: #ffffff;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.35);
+}
+
+.logo-en {
+  margin-top: 6px;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 3.5px;
+  color: rgba(255, 255, 255, 0.94);
+}
+
+.title-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.title-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 280px;
+  padding: 12px 24px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.24) 50%, rgba(255, 255, 255, 0.04) 100%);
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.45);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.45);
+  color: #ffffff;
+  cursor: pointer;
+  transition: transform 0.16s ease, background 0.16s ease;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.65);
+}
+
+.title-menu-btn .zh {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.title-menu-btn .en {
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.85;
+  letter-spacing: 1px;
+}
+
+.title-menu-btn:hover {
+  transform: translateX(10px);
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.15) 0%, rgba(56, 189, 248, 0.48) 50%, rgba(56, 189, 248, 0.1) 100%);
+}
+
+.title-version {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.72);
+  margin-top: 16px;
+}
+
+/* ============================================================================
+   2. MAIN AQUARIUM HUD (Matches frame_16 & ref_3)
+   ============================================================================ */
+.hud-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.hud-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+}
+
+.hud-top-left, .hud-top-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  pointer-events: auto;
+}
+
+.tank-switcher-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px;
+  border-radius: 10px;
+  background: rgba(34, 30, 26, 0.78);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: transform 0.14s ease, border-color 0.14s ease;
+}
+
+.tank-switcher-pill:hover {
+  border-color: #4fd1c5;
+  transform: translateY(-1px);
+}
+
+.currency-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 20px;
+  min-width: 175px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(64, 73, 82, 0.85), rgba(32, 38, 44, 0.9));
+  border: 2px solid rgba(203, 213, 225, 0.45);
+  color: #ffffff;
+  font-size: 19px;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: auto;
+}
+
+.currency-symbol {
+  color: #7dd3fc;
+}
+
+.income-rate {
+  font-size: 12px;
+  color: #86efac;
+  background: rgba(22, 101, 52, 0.55);
+  padding: 2px 7px;
+  border-radius: 99px;
+  margin-left: auto;
+}
+
+.nav-circle-btn {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #2c3e50, #111827);
+  border: 2.5px solid #4fd1c5;
+  color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 0 8px rgba(79, 209, 197, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.nav-circle-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.nav-circle-btn .btn-sub {
+  font-size: 10px;
+  font-weight: 800;
+  color: #99f6e4;
+  margin-top: 1px;
+}
+
+.nav-circle-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 6px 16px rgba(56, 189, 248, 0.55);
+}
+
+/* Left & Right Utility Strips */
+.hud-left-strip {
+  position: absolute;
+  left: 20px;
+  top: 86px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: auto;
+}
+
+.glass-square-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.22);
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(6px);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.65);
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.glass-square-btn:hover {
+  background: rgba(79, 209, 197, 0.38);
+  transform: scale(1.05);
+}
+
+.sq-icon {
+  font-size: 22px;
+}
+
+.sq-label {
+  font-size: 10px;
+  font-weight: 800;
+}
+
+/* Live Water Chemistry & Compatibility Telemetry Card */
+.eco-telemetry-card {
+  position: absolute;
+  left: 94px;
+  top: 86px;
+  width: 340px;
+  background: rgba(17, 24, 39, 0.86);
+  border: 2px solid #4fd1c5;
+  border-radius: 14px;
+  padding: 12px 14px;
+  color: #f1f5f9;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
+}
+
+.eco-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  font-weight: 900;
+  color: #5eead4;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(94, 234, 212, 0.25);
+  padding-bottom: 5px;
+}
+
+.eco-close {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.eco-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px 10px;
+}
+
+.eco-stat {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 5px 8px;
+  border-radius: 8px;
+}
+
+.eco-stat .k {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.eco-stat strong {
+  font-size: 12.5px;
+  color: #f8fafc;
+  margin-top: 2px;
+}
+
+.eco-harmony-note {
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: #bbf7d0;
+  background: rgba(22, 101, 52, 0.4);
+  padding: 6px 9px;
+  border-radius: 7px;
+}
+
+.hud-right-strip {
+  position: absolute;
+  right: 22px;
+  top: 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.util-sq-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(22, 24, 26, 0.78);
+  border: 1.5px solid rgba(255, 255, 255, 0.24);
+  color: #ffffff;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.14s ease, border-color 0.14s ease;
+}
+
+.util-sq-btn:hover, .util-sq-btn.active {
+  border-color: #4fd1c5;
+  background: rgba(20, 83, 78, 0.88);
+  transform: scale(1.06);
+}
+
+/* Bottom-Left Smartphone Widget (Matches ref_3 & frame_16) */
+.smartphone-widget {
+  position: absolute;
+  left: 22px;
+  bottom: 18px;
+  width: 82px;
+  height: 142px;
+  background: #e2e8f0;
+  border: 3px solid #1e293b;
+  border-radius: 16px;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.16s ease;
+}
+
+.smartphone-widget:hover {
+  transform: translateY(-4px);
+}
+
+.wifi-waves {
+  position: absolute;
+  top: -18px;
+  right: -18px;
+  font-weight: 900;
+  font-size: 16px;
+  color: #ffffff;
+  transform: rotate(-35deg);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.phone-speaker {
+  width: 24px;
+  height: 3.5px;
+  background: #334155;
+  border-radius: 4px;
+  margin-bottom: 5px;
+}
+
+.phone-screen {
+  flex: 1;
+  width: 100%;
+  background: #111827;
+  border-radius: 8px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 4px 8px;
+}
+
+.phone-date {
+  font-size: 9px;
+  color: #94a3b8;
+}
+
+.phone-time {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.phone-msg-hint {
+  font-size: 8.5px;
+  color: #5eead4;
+}
+
+.phone-mail-icon {
+  font-size: 18px;
+}
+
+.phone-home-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #1e293b;
+  margin-top: 5px;
+}
+
+/* Bottom-Center Action Dock (Matches frame_16 & ref_3) */
+.hud-bottom-dock {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  pointer-events: auto;
+}
+
+.dock-circle-btn {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #243b4a, #0f172a);
+  border: 2.5px solid #4fd1c5;
+  color: #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+  transition: transform 0.15s ease;
+}
+
+.dock-circle-btn svg {
+  width: 30px;
+  height: 30px;
+}
+
+.dock-sub {
+  font-size: 10px;
+  font-weight: 800;
+  color: #5eead4;
+  margin-top: -2px;
+}
+
+.dock-circle-btn:hover {
+  transform: translateY(-3px) scale(1.06);
+}
+
+.quick-slots-bar {
+  display: flex;
+  gap: 10px;
+}
+
+.quick-slot {
+  position: relative;
+  width: 66px;
+  height: 66px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(51, 65, 85, 0.86), rgba(15, 23, 42, 0.92));
+  border: 2.5px solid #475569;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
+  transition: transform 0.14s ease, border-color 0.14s ease;
+}
+
+.quick-slot.active {
+  border-color: #38bdf8;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.65);
+  transform: translateY(-4px);
+}
+
+.slot-num {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #38bdf8;
+  color: #0f172a;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 1px 6px;
+  border-radius: 5px;
+  border: 1.5px solid #0f172a;
+}
+
+.slot-icon {
+  width: 48px;
+  height: 48px;
+}
+
+.slot-count {
+  position: absolute;
+  right: 5px;
+  bottom: 3px;
+  font-size: 11px;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 0 1px 3px #000;
+}
+
+.exit-idle-btn {
+  position: fixed;
+  right: 22px;
+  top: 22px;
+  z-index: 50;
+  padding: 9px 16px;
+  border-radius: 99px;
+  background: rgba(15, 23, 42, 0.72);
+  border: 1.5px solid #4fd1c5;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* ============================================================================
+   3. AQUARIUM SHOP MODAL (Matches ref_2 & frame_15)
+   ============================================================================ */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  background: rgba(12, 16, 20, 0.62);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shop-scene-container {
+  position: relative;
+  width: min(1220px, 96vw);
+  height: min(720px, 92vh);
+  background: radial-gradient(circle at 25% 30%, rgba(180, 130, 85, 0.38), rgba(20, 32, 38, 0.92));
+  border: 3px solid #0f172a;
+  border-radius: 22px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+}
+
+.shop-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 26px;
+  z-index: 4;
+}
+
+.shop-header-badge {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.exit-door-btn {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #10b981, #047857);
+  border: 3px solid #111827;
+  font-size: 25px;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.shop-title-zh {
+  font-size: 38px;
+  font-weight: 900;
+  color: #eff6ff;
+  text-shadow: 3px 3px 0 #1d4ed8, -2px -2px 0 #1e3a8a;
+  letter-spacing: 3px;
+  line-height: 1;
+}
+
+.shop-title-en {
+  font-size: 13px;
+  font-weight: 900;
+  color: #93c5fd;
+  letter-spacing: 1.5px;
+}
+
+.shop-vintage-posters {
+  position: absolute;
+  right: 16px;
+  top: 72px;
+  bottom: 18px;
+  width: 240px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.85;
+}
+
+.vintage-poster {
+  background: #e7dec8;
+  border: 3px solid #3f382e;
+  padding: 14px;
+  transform: rotate(3deg);
+  color: #3f382e;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.vp-head {
+  font-size: 30px;
+  font-weight: 900;
+  color: #c2410c;
+  border-bottom: 2px solid #3f382e;
+}
+
+.vp-sub {
+  font-size: 13px;
+  font-weight: 800;
+  margin-top: 6px;
+}
+
+.vp-badge {
+  margin-top: 12px;
+  background: #0f766e;
+  color: #fef3c7;
+  padding: 6px;
+  font-size: 11px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.shop-main-layout {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  padding: 0 28px 18px;
+  z-index: 3;
+  position: relative;
+}
+
+.shop-character-col {
+  position: relative;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding-left: 6px;
+}
+
+.speech-bubble {
+  position: absolute;
+  top: 8px;
+  left: 4px;
+  background: #ffffff;
+  color: #111827;
+  padding: 10px 18px;
+  border-radius: 20px;
+  border: 3px solid #111827;
+  font-size: 16px;
+  font-weight: 900;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.25);
+  z-index: 5;
+}
+
+.speech-bubble::after {
+  content: "";
+  position: absolute;
+  right: -12px;
+  bottom: 10px;
+  border-width: 10px 0 10px 14px;
+  border-style: solid;
+  border-color: transparent transparent transparent #ffffff;
+}
+
+.shopkeeper-illustration {
+  width: 245px;
+  height: 410px;
+  margin-bottom: -14px;
+  margin-left: -6px;
+}
+
+/* Purchase Quantity Popover (Matches ref_2 & frame_15) */
+.shop-buy-popover {
+  position: absolute;
+  right: -118px;
+  bottom: 14px;
+  width: 232px;
+  background: linear-gradient(180deg, #e0f2fe, #bae6fd);
+  border: 3px solid #111827;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+
+.popover-header {
+  background: radial-gradient(rgba(255, 255, 255, 0.25) 1.5px, transparent 1.5px),
+              linear-gradient(90deg, #84cc16, #4ade80);
+  background-size: 8px 8px, 100% 100%;
+  padding: 7px 12px;
+  border-bottom: 2.5px solid #111827;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.orange-back-pill {
+  background: linear-gradient(180deg, #fb923c, #ea580c);
+  border: 2.5px solid #111827;
+  color: #111827;
+  font-weight: 900;
+  font-size: 16px;
+  padding: 3px 12px;
+  border-radius: 10px 16px 10px 16px;
+  cursor: pointer;
+}
+
+.popover-body {
+  padding: 8px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.popover-preview {
+  width: 78px;
+  height: 62px;
+  background: #ffffff;
+  border: 2px solid #94a3b8;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popover-desc {
+  font-size: 11.5px;
+  color: #334155;
+  text-align: center;
+  line-height: 1.35;
+}
+
+.qty-control-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qty-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: #10b981;
+  border: 2px solid #064e3b;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.qty-pill {
+  min-width: 72px;
+  text-align: center;
+  background: #475569;
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 99px;
+  font-weight: 900;
+}
+
+.glossy-buy-btn {
+  background: linear-gradient(180deg, #34d399, #059669);
+  border: 2.5px solid #064e3b;
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 15px;
+  padding: 6px 22px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #064e3b;
+}
+
+.popover-tank-target {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 800;
+  background: rgba(15, 23, 42, 0.12);
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.popover-tank-target select {
+  border-radius: 4px;
+  border: 1px solid #475569;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Right Shop Folder Tabs & Board (Matches ref_2) */
+.shop-board-col {
+  display: flex;
+  flex-direction: column;
+  padding-left: 38px;
+  min-height: 0;
+}
+
+.shop-folder-tabs {
+  display: flex;
+  gap: 8px;
+  padding-left: 16px;
+}
+
+.shop-tab {
+  padding: 10px 24px;
+  border-radius: 16px 16px 0 0;
+  border: 3px solid #111827;
+  border-bottom: none;
+  font-size: 19px;
+  font-weight: 900;
+  color: #ffffff;
+  cursor: pointer;
+  text-shadow: 0 2px 3px rgba(0, 0, 0, 0.4);
+  transform: translateY(4px);
+  transition: transform 0.15s ease;
+}
+
+.shop-tab.tab-deals { background: linear-gradient(180deg, #fb923c, #ea580c); }
+.shop-tab.tab-fish { background: linear-gradient(180deg, #38bdf8, #2563eb); }
+.shop-tab.tab-supplies { background: linear-gradient(180deg, #4ade80, #16a34a); }
+
+.shop-tab.active {
+  transform: translateY(0);
+  padding-bottom: 14px;
+}
+
+.shop-board-window {
+  flex: 1;
+  min-height: 0;
+  background: linear-gradient(180deg, #f8fafc 0%, #bae6fd 100%);
+  border: 3.5px solid #111827;
+  border-radius: 18px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+.shop-category-track {
+  background: radial-gradient(rgba(255, 255, 255, 0.25) 1.5px, transparent 1.5px),
+              linear-gradient(90deg, #14b8a6, #0d9488);
+  background-size: 8px 8px, 100% 100%;
+  padding: 12px 26px;
+  border-bottom: 3px solid #111827;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.track-node, .diy-cat-node {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #0f766e;
+  border: 2.5px solid #99f6e4;
+  color: #fff;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.track-node.active, .diy-cat-node.active {
+  background: #38bdf8;
+  border-color: #ffffff;
+  transform: scale(1.12);
+}
+
+.track-line {
+  width: 36px;
+  height: 4px;
+  background: #115e59;
+}
+
+.shop-shelf-grid {
+  flex: 1;
+  padding: 18px 22px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.shop-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.shop-card-box {
+  position: relative;
+  width: 100%;
+  height: 132px;
+  background: #f8fafc;
+  border: 3px solid #1e293b;
+  border-radius: 14px;
+  box-shadow: 0 -5px 0 #0284c7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px;
+  overflow: hidden;
+  transition: transform 0.14s ease;
+}
+
+.shop-card:hover .shop-card-box {
+  transform: translateY(-4px);
+  border-color: #0284c7;
+}
+
+.shop-card-title {
+  font-size: 14px;
+  font-weight: 900;
+  color: #1e293b;
+  text-align: center;
+}
+
+.shop-card-art {
+  width: 82px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hot-ribbon {
+  position: absolute;
+  right: -24px;
+  bottom: 10px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  padding: 2px 26px;
+  transform: rotate(-38deg);
+  border: 1.5px solid #111827;
+}
+
+.shop-price-pill {
+  width: 88%;
+  text-align: center;
+  padding: 4px 10px;
+  border-radius: 99px;
+  background: linear-gradient(180deg, #67e8f9, #22d3ee);
+  border: 2px solid #0e7490;
+  font-weight: 900;
+  font-size: 15px;
+  color: #0f172a;
+}
+
+/* ============================================================================
+   4. TANK INFO & FISH ROSTER MODAL (Matches ref_3)
+   ============================================================================ */
+.halftone-window {
+  background: linear-gradient(180deg, #eff6ff 0%, #bae6fd 100%);
+  border: 3.5px solid #111827;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.65);
+}
+
+.info-window {
+  width: min(1040px, 94vw);
+  height: min(640px, 88vh);
+  display: flex;
+  flex-direction: column;
+}
+
+.halftone-header {
+  background: radial-gradient(rgba(255, 255, 255, 0.24) 1.5px, transparent 1.5px),
+              linear-gradient(90deg, #84cc16, #22c55e);
+  background-size: 8px 8px, 100% 100%;
+  padding: 12px 24px;
+  border-bottom: 3px solid #111827;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left-group {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.window-title-zh {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 900;
+  color: #14532d;
+  letter-spacing: 2px;
+}
+
+.tank-badge-select {
+  background: #475569;
+  color: #ffffff;
+  border: 2px solid #cbd5e1;
+  padding: 6px 16px;
+  border-radius: 99px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.info-body-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 20px;
+  padding: 18px 24px;
+  overflow: hidden;
+}
+
+.info-roster-col {
+  background: #4692b0;
+  border: 2.5px solid #1e3a8a;
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.roster-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.filter-funnel {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.filter-pill {
+  padding: 4px 12px;
+  border-radius: 7px;
+  border: 2px solid #0f172a;
+  background: #1d4ed8;
+  color: #e2e8f0;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.filter-pill.active {
+  background: #4ade80;
+  color: #064e3b;
+}
+
+.roster-slot-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.fish-slot-card {
+  position: relative;
+  height: 68px;
+  border-radius: 9px;
+  background: linear-gradient(180deg, #fef9c3, #bae6fd);
+  border: 2.5px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.fish-slot-card.selected {
+  border-color: #22c55e;
+  box-shadow: 0 0 0 3px #4ade80;
+}
+
+.fish-slot-card.empty {
+  background: rgba(15, 23, 42, 0.25);
+  border-color: rgba(255, 255, 255, 0.35);
+  cursor: default;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 22px;
+}
+
+.slot-king-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: #f59e0b;
+  color: #fff;
+  font-size: 10px;
+  padding: 1px 3px;
+  border-radius: 4px;
+}
+
+.roster-footer {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #fff;
+}
+
+.density-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+}
+
+.density-tag {
+  font-size: 12px;
+  background: #16a34a;
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+
+/* Right Detail Column (Matches ref_3) */
+.info-detail-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fish-showcase-box {
+  height: 195px;
+  background: linear-gradient(180deg, #0f2942 0%, #0284c7 100%);
+  border: 2.5px solid #0f172a;
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.showcase-top-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+#detail-fish-title {
+  margin: 0;
+  font-size: 19px;
+}
+
+.stars {
+  color: #facc15;
+}
+
+.detail-tags {
+  margin-top: 4px;
+  display: flex;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.tag-king { color: #a3e635; }
+.tag-shiny { color: #38bdf8; }
+
+.trophy-badge {
+  background: #f59e0b;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.detail-fish-illustration {
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.detail-fish-illustration svg {
+  width: 170px;
+  height: 105px;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.45));
+}
+
+.fish-stats-sheet {
+  flex: 1;
+  background: #ecfccb;
+  border: 2px solid #84cc16;
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #1e293b;
+}
+
+.fish-stats-sheet h4 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.stats-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  font-size: 13px;
+}
+
+.sheet-desc {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: #475569;
+  border-top: 1px dashed #a3e635;
+  padding-top: 6px;
+}
+
+.info-bottom-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.glossy-sell-btn {
+  background: linear-gradient(180deg, #34d399, #059669);
+  border: 3px solid #111827;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 900;
+  padding: 8px 38px;
+  border-radius: 999px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #064e3b;
+}
+
+/* ============================================================================
+   5. DIY AQUASCAPE EDITOR HUD (Matches ss_02, ref_4, frame_07)
+   ============================================================================ */
+.diy-top-left {
+  position: absolute;
+  top: 18px;
+  left: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  pointer-events: auto;
+}
+
+.diy-mode-badge {
+  background: rgba(15, 23, 42, 0.82);
+  border: 2px solid #4ade80;
+  color: #86efac;
+  padding: 7px 16px;
+  border-radius: 99px;
+  font-weight: 900;
+}
+
+.diy-gizmo-bar {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(20, 24, 28, 0.82);
+  border: 2px solid rgba(79, 209, 197, 0.45);
+  border-radius: 14px;
+  padding: 12px 22px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  pointer-events: auto;
+  backdrop-filter: blur(8px);
+}
+
+.gizmo-sliders {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gizmo-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #2dd4bf;
+  font-weight: 900;
+}
+
+.gizmo-slider-row input[type="range"] {
+  width: 170px;
+  accent-color: #10b981;
+}
+
+.gizmo-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.gizmo-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: none;
+  font-size: 20px;
+  font-weight: 900;
+  color: #fff;
+  cursor: pointer;
+}
+
+.btn-rotate { background: #0d9488; }
+.btn-confirm { background: #38bdf8; }
+.btn-store { background: #fb7185; }
+
+.diy-bottom-drawer {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: min(980px, 95vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: auto;
+}
+
+.diy-cards-tray {
+  width: 90%;
+  background: rgba(56, 130, 150, 0.88);
+  border: 2.5px solid #111827;
+  border-bottom: none;
+  border-radius: 14px 14px 0 0;
+  padding: 10px 16px;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+}
+
+.diy-item-card {
+  min-width: 82px;
+  height: 92px;
+  background: #ecfccb;
+  border: 2.5px solid #1e293b;
+  border-radius: 10px;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  position: relative;
+}
+
+.diy-item-card:hover {
+  border-color: #22c55e;
+  transform: translateY(-3px);
+}
+
+.diy-item-card .art {
+  width: 54px;
+  height: 54px;
+}
+
+.diy-item-card .name {
+  font-size: 11px;
+  font-weight: 900;
+  color: #1e293b;
+  white-space: nowrap;
+}
+
+.diy-item-card .stock {
+  position: absolute;
+  right: 4px;
+  bottom: 22px;
+  font-size: 11px;
+  font-weight: 900;
+  color: #0f172a;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 0 4px;
+  border-radius: 4px;
+}
+
+.diy-halftone-bar {
+  width: 100%;
+  background: radial-gradient(rgba(255, 255, 255, 0.22) 1.5px, transparent 1.5px),
+              linear-gradient(90deg, #65a30d, #16a34a);
+  background-size: 8px 8px, 100% 100%;
+  border: 3px solid #111827;
+  border-bottom: none;
+  border-radius: 18px 18px 0 0;
+  padding: 10px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.diy-mode-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.diy-tab {
+  background: rgba(15, 23, 42, 0.35);
+  border: 2px solid #bbf7d0;
+  color: #fff;
+  font-weight: 900;
+  padding: 6px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.diy-tab.active {
+  background: #fef08a;
+  color: #14532d;
+  border-color: #14532d;
+}
+
+.diy-node-track {
+  display: flex;
+  align-items: center;
+}
+
+.diy-hint-text {
+  font-size: 12px;
+  font-weight: 800;
+  color: #ecfccb;
+}
+
+/* ============================================================================
+   6. DSLR CAMERA VIEWFINDER OVERLAY (Matches ss_01 & ss_05)
+   ============================================================================ */
+.cam-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 30px;
+  pointer-events: auto;
+}
+
+.af-mf-switch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(245, 238, 215, 0.25);
+  border: 2px solid #fef08a;
+  padding: 5px 14px;
+  border-radius: 10px;
+  color: #fef08a;
+  font-weight: 900;
+}
+
+.cam-timer-badge {
+  background: #fef08a;
+  color: #1e293b;
+  font-weight: 900;
+  font-size: 20px;
+  padding: 6px 16px;
+  border-radius: 10px;
+}
+
+.cam-side-slider {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #fef9c3;
+  font-weight: 800;
+  pointer-events: auto;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+}
+
+.cam-side-slider.left { left: 28px; }
+.cam-side-slider.right { right: 28px; }
+
+.vertical-range {
+  writing-mode: bt-lr;
+  -webkit-appearance: slider-vertical;
+  width: 12px;
+  height: 240px;
+  accent-color: #fef08a;
+  cursor: pointer;
+}
+
+.cam-readout {
+  text-align: center;
+  font-size: 16px;
+}
+
+.aperture-icon {
+  font-size: 28px;
+}
+
+.cam-focus-reticle {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  transform: translate(-50%, -50%);
+  width: 128px;
+  height: 88px;
+  pointer-events: none;
+}
+
+.cam-focus-reticle .corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-color: rgba(255, 255, 255, 0.88);
+  border-style: solid;
+}
+
+.corner.tl { top: 0; left: 0; border-width: 3px 0 0 3px; }
+.corner.tr { top: 0; right: 0; border-width: 3px 3px 0 0; }
+.corner.bl { bottom: 0; left: 0; border-width: 0 0 3px 3px; }
+.corner.br { bottom: 0; right: 0; border-width: 0 3px 3px 0; }
+
+.cam-focus-reticle .crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 26px;
+}
+
+.cam-bottom-bar {
+  position: absolute;
+  left: 30px;
+  right: 30px;
+  bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  pointer-events: auto;
+  color: #fef9c3;
+}
+
+.cam-filter-btns {
+  display: flex;
+  gap: 10px;
+}
+
+.cam-filter-btn {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background: rgba(20, 20, 20, 0.65);
+  border: 2px solid #fde047;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.cam-filter-btn.active {
+  background: rgba(250, 204, 21, 0.35);
+}
+
+.cam-iso-control {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+}
+
+.iso-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.iso-slider-row input[type="range"] {
+  width: 260px;
+  accent-color: #fde047;
+}
+
+.shutter-circle-btn {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.88);
+  border: 5px solid #fde047;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  transition: transform 0.12s ease;
+}
+
+.shutter-circle-btn:active {
+  transform: scale(0.9);
+}
+
+/* ============================================================================
+   7. WILD FORAGING MAP & 3D STREAM CATCH (Matches frame_37, 40, ss_10)
+   ============================================================================ */
+.foraging-container {
+  width: min(1100px, 95vw);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.forage-weather {
+  color: #fef08a;
+  font-size: 20px;
+  font-weight: 800;
+  margin-left: 14px;
+}
+
+.map-window {
+  height: min(580px, 80vh);
+  display: flex;
+  flex-direction: column;
+}
+
+.lv-block {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #14532d;
+  font-weight: 900;
+}
+
+.lv-num {
+  font-size: 26px;
+}
+
+.lv-progress-bar {
+  position: relative;
+  width: 150px;
+  height: 16px;
+  background: #1e293b;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+#forage-xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2dd4bf, #4ade80);
+}
+
+#forage-xp-text {
+  position: absolute;
+  inset: 0;
+  text-align: center;
+  font-size: 11px;
+  color: #fff;
+  line-height: 16px;
+}
+
+.region-pill {
+  background: #15803d;
+  color: #fff;
+  padding: 6px 22px;
+  border-radius: 99px;
+  border: 2px solid #bbf7d0;
+  font-weight: 900;
+}
+
+.stamina-block {
+  display: flex;
+  gap: 14px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.city-river-map {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+.river-map-svg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.forage-polaroid-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.polaroid-card {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 156px;
+  background: #ffffff;
+  border: 3px solid #22c55e;
+  border-radius: 12px;
+  padding: 8px;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  transition: transform 0.16s ease;
+}
+
+.polaroid-card:hover {
+  transform: translate(-50%, -54%) scale(1.06);
+}
+
+.polaroid-tag {
+  background: linear-gradient(90deg, #06b6d4, #22c55e);
+  color: #fff;
+  text-align: center;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  border: 1.5px solid #111827;
+}
+
+.polaroid-art {
+  height: 82px;
+  background: linear-gradient(180deg, #86efac, #0d9488);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.polaroid-foot {
+  margin-top: 6px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: 800;
+  color: #475569;
+}
+
+/* 3D Stream Dip-Netting HUD & Hand Catch Card (Matches frame_40 & ss_10) */
+.stream-top-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 28px;
+  pointer-events: auto;
+}
+
+.stream-spot-badge {
+  background: rgba(15, 23, 42, 0.78);
+  border: 2px solid #4ade80;
+  color: #ecfccb;
+  padding: 8px 20px;
+  border-radius: 99px;
+  font-weight: 900;
+}
+
+.stream-watermark {
+  position: absolute;
+  left: 50%;
+  bottom: 85px;
+  transform: translateX(-50%);
+  font-size: 46px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.75);
+  letter-spacing: 4px;
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.caught-reward-card {
+  position: absolute;
+  left: 50%;
+  bottom: 12%;
+  transform: translateX(-50%);
+  width: 440px;
+  background: #f8fafc;
+  border: 3px solid #0f766e;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
+  pointer-events: auto;
+  text-align: center;
+}
+
+.caught-header-badge {
+  background: linear-gradient(90deg, #0d9488, #10b981);
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 900;
+  padding: 10px;
+  border-bottom: 2.5px solid #064e3b;
+}
+
+.caught-wave-band {
+  background: linear-gradient(90deg, #fef9c3, #fde047, #fef9c3);
+  padding: 14px;
+  margin: 14px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.caught-fish-svg svg {
+  width: 120px;
+  height: 75px;
+}
+
+.caught-fish-name {
+  font-size: 18px;
+  font-weight: 900;
+  color: #1e293b;
+}
+
+.caught-actions {
+  padding-bottom: 14px;
+}
+
+/* ============================================================================
+   8. NEIGHBOR OLD SUN VISUAL-NOVEL DIALOGUE BOX (Matches ss_12)
+   ============================================================================ */
+.vn-dialogue-stage {
+  position: absolute;
+  bottom: 42px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(760px, 90vw);
+}
+
+.vn-speaker-tag {
+  display: inline-block;
+  background: linear-gradient(90deg, #2563eb, #22c55e);
+  color: #ffffff;
+  font-weight: 900;
+  font-size: 18px;
+  padding: 6px 24px;
+  border-radius: 10px;
+  border: 2.5px solid #111827;
+  transform: translateY(10px) translateX(20px);
+}
+
+.vn-dialogue-box {
+  background: linear-gradient(180deg, #fefce8 0%, #99f6e4 100%);
+  border: 3.5px solid #111827;
+  border-radius: 16px;
+  padding: 24px 30px;
+  font-size: 19px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.6;
+  cursor: pointer;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+}
+
+.vn-next-fish {
+  text-align: right;
+  font-size: 14px;
+  font-weight: 900;
+  color: #0f766e;
+  margin-top: 8px;
+}

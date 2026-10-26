@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>缸好有鱼 Fish Tankfully — Desktop Idle Aquarium Simulator</title>
+  <link rel="stylesheet" href="./styles.css" />
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "/node_modules/three/build/three.module.js",
+        "three/addons/": "/node_modules/three/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- 3D WebGL Viewport Container -->
+  <div id="viewport-container">
+    <canvas id="tank-canvas"></canvas>
+    <!-- Foreground Bokeh Vignette for DSLR Aperture f/1.4 Depth-of-Field simulation -->
+    <div id="dof-vignette"></div>
+    <!-- Floating Action Banner (e.g., 清洁 CLEAN UP / 喂食 FEEDING / 换水 WATER CHANGE) -->
+    <div id="action-banner" class="hidden">清洁 CLEAN UP</div>
+  </div>
+
+  <!-- ==================================================================== -->
+  <!-- 1. TITLE SCREEN OVERLAY (Matches frame_02)                           -->
+  <!-- ==================================================================== -->
+  <section id="title-overlay" class="overlay-screen">
+    <div class="title-left-column">
+      <div class="logo-emblem">
+        <div class="logo-bowl-frame">
+          <span class="logo-fish-badge">🐟</span>
+          <h1 class="logo-zh">缸好有鱼</h1>
+        </div>
+        <div class="logo-en">FISH TANKFULLY</div>
+      </div>
+
+      <nav class="title-menu">
+        <button class="title-menu-btn" id="btn-start-game">
+          <span class="zh">新游戏</span>
+          <span class="en">START AQUARIUM</span>
+        </button>
+        <button class="title-menu-btn" id="btn-continue-game">
+          <span class="zh">继续游戏</span>
+          <span class="en">CONTINUE</span>
+        </button>
+        <button class="title-menu-btn" id="btn-title-camera">
+          <span class="zh">微距摄影</span>
+          <span class="en">DSLR PHOTO MODE</span>
+        </button>
+        <button class="title-menu-btn" id="btn-title-forage">
+          <span class="zh">溪流野采</span>
+          <span class="en">WILD FORAGING</span>
+        </button>
+      </nav>
+
+      <div class="title-version">App:v1.6 Res:1790246604 Cfg:6e2aa1f7 · Engine Roar Tribute</div>
+    </div>
+  </section>
+
+  <!-- ==================================================================== -->
+  <!-- 2. MAIN AQUARIUM HUD (Matches frame_16 & ref_3)                      -->
+  <!-- ==================================================================== -->
+  <section id="main-hud" class="hud-layer hidden">
+    <!-- Top Bar -->
+    <header class="hud-top-bar">
+      <div class="hud-top-left">
+        <button id="btn-tank-switcher" class="tank-switcher-pill" title="Switch Aquarium Tank">
+          <span class="bowl-icon">🏺</span>
+          <span id="hud-tank-name">大鱼缸 · Grand Biotope</span>
+          <span class="caret">▾</span>
+        </button>
+
+        <div class="currency-pill" title="Current Funds & Passive Fish Income">
+          <span class="currency-symbol">$:</span>
+          <span id="hud-money">17,324</span>
+          <span id="hud-income-rate" class="income-rate">+6.8/h</span>
+        </div>
+      </div>
+
+      <div class="hud-top-right">
+        <button class="nav-circle-btn" id="btn-open-foraging" title="Wild Foraging Map (野采地图)">
+          <svg viewBox="0 0 24 24"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2-6-2zm0 2v12m6-10v12" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          <span class="btn-sub">野采</span>
+        </button>
+        <button class="nav-circle-btn" id="btn-open-shop" title="Aquarium Shop (水族店)">
+          <svg viewBox="0 0 24 24"><path d="M3 4h2l2.4 10.5a2 2 0 002 1.5h8.2a2 2 0 001.9-1.4L22 7H6m4 13a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zm9 0a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          <span class="btn-sub">商店</span>
+        </button>
+        <button class="nav-circle-btn" id="btn-open-diy" title="DIY Aquascape Editor (随心造景)">
+          <svg viewBox="0 0 24 24"><path d="M12 20V10m0 10c-4-2-7-6-7-10 4 0 7 3 7 10zm0 0c4-2 7-6 7-10-4 0-7 3-7 10z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          <span class="btn-sub">造景</span>
+        </button>
+        <button class="nav-circle-btn" id="btn-open-info" title="Tank Info & Fish Roster (鱼缸信息)">
+          <svg viewBox="0 0 24 24"><path d="M3 6h18v12H3V6zm9 3c-2.8 0-5 1.5-6 3 1 1.5 3.2 3 6 3s5-1.5 6-3c-1-1.5-3.2-3-6-3z" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+          <span class="btn-sub">鱼缸</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Left-Side Translucent Telemetry & Guide Buttons (Matches frame_16) -->
+    <aside class="hud-left-strip">
+      <button class="glass-square-btn" id="btn-toggle-eco" title="Water Chemistry & Ecosystem Telemetry">
+        <span class="sq-icon">📊</span>
+        <span class="sq-label">生态水质</span>
+      </button>
+      <button class="glass-square-btn" id="btn-open-dialogue" title="Aquarist Notes & Neighbor Old Sun">
+        <span class="sq-icon">📝</span>
+        <span class="sq-label">老孙手记</span>
+      </button>
+    </aside>
+
+    <!-- Live Water Chemistry & Compatibility Telemetry Popover -->
+    <div id="eco-telemetry-card" class="eco-telemetry-card hidden">
+      <div class="eco-card-header">
+        <span>🌿 实时生态指标 · ECOSYSTEM TELEMETRY</span>
+        <button id="btn-close-eco" class="eco-close">×</button>
+      </div>
+      <div class="eco-metrics-grid">
+        <div class="eco-stat">
+          <span class="k">饲养密度 Stocking</span>
+          <strong id="eco-stocking">17 / 50</strong>
+        </div>
+        <div class="eco-stat">
+          <span class="k">溶氧 O₂ / CO₂</span>
+          <strong id="eco-gas">8.4 mg/L · 18 ppm</strong>
+        </div>
+        <div class="eco-stat">
+          <span class="k">酸碱度 pH / 水温</span>
+          <strong id="eco-ph-temp">pH 6.6 · 24.5°C</strong>
+        </div>
+        <div class="eco-stat">
+          <span class="k">过滤与光照 Gear</span>
+          <strong id="eco-gear">120 L/h · 60W</strong>
+        </div>
+        <div class="eco-stat">
+          <span class="k">水质净度 Clarity</span>
+          <strong id="eco-clarity">94% (缸壁藻 14%)</strong>
+        </div>
+        <div class="eco-stat">
+          <span class="k">鱼群相性 Harmony</span>
+          <strong id="eco-harmony">96% 极佳</strong>
+        </div>
+      </div>
+      <div id="eco-harmony-note" class="eco-harmony-note">
+        鱼群相性极佳，红绿灯与埃及神仙群游状态放松。
+      </div>
+    </div>
+
+    <!-- Right-Side Vertical Utility Strip (Matches frame_16 & ss_04) -->
+    <aside class="hud-right-strip">
+      <button class="util-sq-btn" id="btn-toggle-title" title="Title Menu">⚙</button>
+      <button class="util-sq-btn" id="btn-toggle-idle" title="Desktop Idle Clean View (Hide UI)">👁</button>
+      <button class="util-sq-btn" id="btn-open-camera" title="DSLR Camera & Macro Photo Mode">📷</button>
+      <button class="util-sq-btn" id="btn-toggle-music" title="Toggle Cozy Desk Lo-Fi Audio">🎵</button>
+    </aside>
+
+    <!-- Bottom-Left Smartphone Widget (Matches ref_3 & frame_16) -->
+    <div class="smartphone-widget" id="smartphone-widget" title="Click to read Aquarist Messages">
+      <div class="wifi-waves">)))</div>
+      <div class="phone-speaker"></div>
+      <div class="phone-screen">
+        <div class="phone-date" id="phone-date">2026/08/12</div>
+        <div class="phone-time" id="phone-time">10:19</div>
+        <div class="phone-msg-hint">点击查看消息</div>
+        <div class="phone-mail-icon">✉️</div>
+      </div>
+      <div class="phone-home-dot"></div>
+    </div>
+
+    <!-- Bottom-Center Action Dock (Matches frame_16 & ref_3) -->
+    <footer class="hud-bottom-dock">
+      <!-- Siphon Water Change Button -->
+      <button class="dock-circle-btn" id="btn-water-change" title="Siphon & Water Change (换水净缸)">
+        <svg viewBox="0 0 36 36">
+          <rect x="6" y="10" width="24" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2.4"/>
+          <path d="M8 20 Q14 17 18 20 T28 20" fill="none" stroke="#4fd1c5" stroke-width="2.4"/>
+          <path d="M22 6 C26 6 26 14 20 18" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>
+        <span class="dock-sub">换水</span>
+      </button>
+
+      <!-- 4 Quick-Use Item Slots [1] [2] [3] [4] -->
+      <div class="quick-slots-bar">
+        <button class="quick-slot active" data-slot="1" id="slot-btn-1" title="[1] Magnetic Algae Scraper (鱼缸擦) — Drag on glass to clean!">
+          <span class="slot-num">1</span>
+          <div class="slot-icon" id="slot-icon-1"></div>
+          <span class="slot-count" id="slot-count-1">x2</span>
+        </button>
+        <button class="quick-slot" data-slot="2" id="slot-btn-2" title="[2] Sinking Fish Pellets (普通沉粮) — Click to feed fish!">
+          <span class="slot-num">2</span>
+          <div class="slot-icon" id="slot-icon-2"></div>
+          <span class="slot-count" id="slot-count-2">x25</span>
+        </button>
+        <button class="quick-slot" data-slot="3" id="slot-btn-3" title="[3] Golden Color Food (增色鱼粮) — Grows fry & unlocks Shiny!">
+          <span class="slot-num">3</span>
+          <div class="slot-icon" id="slot-icon-3"></div>
+          <span class="slot-count" id="slot-count-3">x12</span>
+        </button>
+        <button class="quick-slot" data-slot="4" id="slot-btn-4" title="[4] Methylene Blue (亚甲基蓝) — Purifies water & heals fish!">
+          <span class="slot-num">4</span>
+          <div class="slot-icon" id="slot-icon-4"></div>
+          <span class="slot-count" id="slot-count-4">x8</span>
+        </button>
+      </div>
+
+      <!-- Backpack & Fish Roster Buttons -->
+      <button class="dock-circle-btn" id="btn-dock-backpack" title="Open Backpack / DIY Storage [B]">
+        <svg viewBox="0 0 36 36">
+          <path d="M11 13h14a3 3 0 013 3v12H8V16a3 3 0 013-3zm3-4h8v4h-8V9z" fill="none" stroke="currentColor" stroke-width="2.4"/>
+        </svg>
+        <span class="dock-sub">背包</span>
+      </button>
+
+      <button class="dock-circle-btn" id="btn-dock-roster" title="Open Tank Fish Roster & Earnings">
+        <svg viewBox="0 0 36 36">
+          <path d="M6 20c5-6 13-6 19 0-6 6-14 6-19 0zm19 0l5-4v8l-5-4z" fill="none" stroke="currentColor" stroke-width="2.4"/>
+          <circle cx="18" cy="10" r="3.5" fill="none" stroke="#fbd38d" stroke-width="2.2"/>
+        </svg>
+        <span class="dock-sub">鱼群</span>
+      </button>
+    </footer>
+  </section>
+
+  <!-- Floating Clean Idle Mode Exit Button -->
+  <button id="btn-exit-idle" class="exit-idle-btn hidden" title="Restore UI Controls">
+    👁 显示界面 · Show UI
+  </button>
+
+  <!-- ==================================================================== -->
+  <!-- 3. AQUARIUM SHOP MODAL (Matches ref_2 & frame_15)                    -->
+  <!-- ==================================================================== -->
+  <section id="shop-modal" class="modal-backdrop hidden">
+    <div class="shop-scene-container">
+      <!-- Top Bar -->
+      <div class="shop-top-bar">
+        <div class="shop-header-badge">
+          <button class="exit-door-btn" id="btn-close-shop" title="Return to Aquarium">🏃</button>
+          <div class="shop-title-block">
+            <div class="shop-title-zh">水族店</div>
+            <div class="shop-title-en">AQUARIUM SHOP</div>
+          </div>
+        </div>
+
+        <div class="currency-pill shop-currency">
+          <span class="currency-symbol">$:</span>
+          <span id="shop-money">17,324</span>
+        </div>
+      </div>
+
+      <!-- Vintage Aquarium Posters in Back-Right (Matches ref_2) -->
+      <div class="shop-vintage-posters">
+        <div class="vintage-poster p1">
+          <div class="vp-head">可可水族</div>
+          <div class="vp-sub">原生溪流与南美生态</div>
+          <div class="vp-badge">TROPICAL FIN · EST. 1950</div>
+        </div>
+      </div>
+
+      <div class="shop-main-layout">
+        <!-- Left: Illustrated Shopkeeper Coco + Speech Bubble + Purchase Quantity Popover -->
+        <div class="shop-character-col">
+          <div class="speech-bubble" id="shop-speech">欢迎光临！</div>
+          <div id="shopkeeper-illustration" class="shopkeeper-illustration"></div>
+
+          <!-- Purchase Quantity Popover Card (Matches ref_2 & frame_15) -->
+          <div id="shop-buy-popover" class="shop-buy-popover">
+            <div class="popover-header">
+              <span id="buy-pop-title">鱼缸擦</span>
+              <button class="orange-back-pill" id="btn-close-buy-popover">↩</button>
+            </div>
+            <div class="popover-body">
+              <div class="popover-preview" id="buy-pop-preview"></div>
+              <div class="popover-desc" id="buy-pop-desc">强磁双面鱼缸擦，拖动即可刮除绿藻。</div>
+              <div class="qty-control-row">
+                <button class="qty-btn" id="btn-qty-minus">−</button>
+                <span class="qty-pill" id="buy-qty-val">1</span>
+                <button class="qty-btn" id="btn-qty-plus">+</button>
+              </div>
+              <button class="glossy-buy-btn" id="btn-confirm-buy">
+                $: <span id="buy-total-price">23</span> · 购买
+              </button>
+              <div class="popover-tank-target" id="buy-tank-target-row">
+                <span>目标鱼缸:</span>
+                <select id="buy-target-tank-select">
+                  <option value="grand_biotope">大鱼缸 (Grand Biotope)</option>
+                  <option value="mecha_ruins">机甲生态缸 (Mecha Scape)</option>
+                  <option value="nano_cube">小鱼缸 (Nano Cube)</option>
+                  <option value="classic_bowl">圆缸 (Desktop Bowl)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Folder Tabs & Halftone Shelf Board (Matches ref_2) -->
+        <div class="shop-board-col">
+          <div class="shop-folder-tabs">
+            <button class="shop-tab tab-deals active" data-tab="deals">
+              <span>🛒</span> 今日特惠
+            </button>
+            <button class="shop-tab tab-fish" data-tab="fish">
+              <span>🐟</span> 水中鱼
+            </button>
+            <button class="shop-tab tab-supplies" data-tab="supplies">
+              <span>🏺</span> 缸中物
+            </button>
+          </div>
+
+          <div class="shop-board-window">
+            <!-- Sub-Category Connected Track -->
+            <div class="shop-category-track" id="shop-category-track">
+              <button class="track-node active" data-cat="all" title="All Items">⊞</button>
+              <span class="track-line"></span>
+              <button class="track-node" data-cat="driftwood" title="Driftwood (沉木)">🪵</button>
+              <span class="track-line"></span>
+              <button class="track-node" data-cat="plants" title="Aquatic Plants (水草)">🌿</button>
+              <span class="track-line"></span>
+              <button class="track-node" data-cat="rocks" title="Hardscape & Relics (山石)">🪨</button>
+              <span class="track-line"></span>
+              <button class="track-node" data-cat="equipment" title="Filters & Lights (器材)">⚙️</button>
+              <span class="track-line"></span>
+              <button class="track-node" data-cat="care" title="Food & Care (鱼粮药剂)">🧴</button>
+            </div>
+
+            <!-- Shelf Grid -->
+            <div id="shop-shelf-grid" class="shop-shelf-grid"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================================== -->
+  <!-- 4. TANK INFO & FISH ROSTER MODAL (Matches ref_3)                     -->
+  <!-- ==================================================================== -->
+  <section id="info-modal" class="modal-backdrop hidden">
+    <div class="halftone-window info-window">
+      <header class="halftone-header">
+        <div class="header-left-group">
+          <h2 class="window-title-zh">鱼缸信息</h2>
+          <select id="info-tank-select" class="tank-badge-select">
+            <option value="grand_biotope">大鱼缸 · 生态主缸</option>
+            <option value="mecha_ruins">机甲生态缸 · 胶佬微景</option>
+            <option value="nano_cube">缸姐的灯鱼小缸</option>
+            <option value="classic_bowl">办公桌经典圆缸</option>
+          </select>
+        </div>
+        <button class="orange-back-pill" id="btn-close-info">↩</button>
+      </header>
+
+      <div class="info-body-grid">
+        <!-- Left: Filter Pills + 6x5 Fish Slot Grid + Density Footer -->
+        <div class="info-roster-col">
+          <div class="roster-filter-bar">
+            <span class="filter-funnel">▽</span>
+            <button class="filter-pill active" data-sort="quality">品质</button>
+            <button class="filter-pill" data-sort="price">售价</button>
+            <button class="filter-pill" data-sort="income">收益</button>
+            <button class="filter-pill" data-sort="stage">阶段</button>
+          </div>
+
+          <div id="roster-slot-grid" class="roster-slot-grid"></div>
+
+          <div class="roster-footer">
+            <div class="density-indicator">
+              <span class="density-icon">🐟</span>
+              <strong id="info-density-text">17/50</strong>
+              <span id="info-density-status" class="density-tag">密度适宜</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Selected Fish 3D/SVG Card + Detailed Telemetry + Sell Button -->
+        <div class="info-detail-col">
+          <div class="fish-showcase-box">
+            <div class="showcase-top-meta">
+              <div>
+                <h3 id="detail-fish-title">红绿灯 成鱼 <span class="stars">★★★</span></h3>
+                <div id="detail-fish-tags" class="detail-tags">
+                  <span class="tag-king">【鱼王】</span>
+                  <span class="tag-shiny">【闪光】</span>
+                </div>
+              </div>
+              <div class="trophy-badge" id="detail-trophy">🏆</div>
+            </div>
+            <div id="detail-fish-illustration" class="detail-fish-illustration"></div>
+          </div>
+
+          <div class="fish-stats-sheet">
+            <h4 id="sheet-fish-name">红绿灯 成鱼 (Paracheirodon innesi)</h4>
+            <div class="stats-two-col">
+              <div>体长: <strong id="sheet-length">2.5cm</strong></div>
+              <div>获得时间: <strong id="sheet-date">2026. 8. 28</strong></div>
+              <div>获得地点: <strong id="sheet-source">商店购买</strong></div>
+              <div>适宜水温: <strong id="sheet-temp">22–26°C</strong></div>
+              <div>当前售价: <strong id="sheet-price">$12</strong></div>
+              <div>被动收益: <strong id="sheet-income">$0.3/h</strong></div>
+              <div>存储上限: <strong id="sheet-storage">30</strong></div>
+              <div>状态健康: <strong id="sheet-health">98% 极佳</strong></div>
+            </div>
+            <p id="sheet-desc" class="sheet-desc"></p>
+          </div>
+
+          <div class="info-bottom-actions">
+            <button class="glossy-sell-btn" id="btn-sell-fish">《 出售 · SELL 》</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================================== -->
+  <!-- 5. DIY AQUASCAPING EDITOR HUD (Matches ss_02, ref_4, frame_07)       -->
+  <!-- ==================================================================== -->
+  <section id="diy-hud" class="hud-layer hidden">
+    <div class="diy-top-left">
+      <button class="exit-door-btn" id="btn-close-diy" title="Finish Aquascaping">🏃</button>
+      <span class="diy-mode-badge">随心造景 · DIY AQUASCAPE EDITOR</span>
+    </div>
+
+    <!-- Top Floating Transform & Confirm Bar (Matches ss_02 & ref_4) -->
+    <div id="diy-gizmo-bar" class="diy-gizmo-bar">
+      <div class="gizmo-sliders">
+        <label class="gizmo-slider-row" title="Adjust Vertical Height (↕)">
+          <span class="gizmo-icon">↕</span>
+          <input type="range" id="diy-slider-height" min="-0.2" max="1.6" step="0.05" value="0" />
+        </label>
+        <label class="gizmo-slider-row" title="Adjust Prop Scale (⤢)">
+          <span class="gizmo-icon">⤢</span>
+          <input type="range" id="diy-slider-scale" min="0.55" max="1.65" step="0.05" value="1.0" />
+        </label>
+      </div>
+      <div class="gizmo-actions">
+        <button class="gizmo-btn btn-rotate" id="btn-diy-rotate" title="Rotate 45° (🔄)">🔄</button>
+        <button class="gizmo-btn btn-confirm" id="btn-diy-confirm" title="Confirm Placement (✔)">✔</button>
+        <button class="gizmo-btn btn-store" id="btn-diy-remove" title="Return to Storage Box (📦)">📦</button>
+      </div>
+    </div>
+
+    <!-- Bottom Green Halftone DIY Drawer (Matches frame_07) -->
+    <footer class="diy-bottom-drawer">
+      <div class="diy-cards-tray" id="diy-cards-tray"></div>
+
+      <div class="diy-halftone-bar">
+        <div class="diy-mode-tabs">
+          <button class="diy-tab active" data-diy-group="decor">🏺 装饰 Decor</button>
+          <button class="diy-tab" data-diy-group="gear">⚙️ 器材 Gear</button>
+        </div>
+
+        <div class="diy-node-track">
+          <button class="diy-cat-node active" data-cat="all" title="All Items">⊞</button>
+          <span class="track-line"></span>
+          <button class="diy-cat-node" data-cat="driftwood" title="Driftwood (沉木)">🪵</button>
+          <span class="track-line"></span>
+          <button class="diy-cat-node" data-cat="plants" title="Aquatic Plants (水草)">🌿</button>
+          <span class="track-line"></span>
+          <button class="diy-cat-node" data-cat="rocks" title="Rocks & Mecha Relics (山石)">🪨</button>
+          <span class="track-line"></span>
+          <button class="diy-cat-node" data-cat="equipment" title="Filters & Lamps (器材)">💡</button>
+        </div>
+
+        <div class="diy-hint-text">提示：点击下方物品放入鱼缸，鼠标拖拽可在3D网格中自由移动摆放</div>
+      </div>
+    </footer>
+  </section>
+
+  <!-- ==================================================================== -->
+  <!-- 6. DSLR CAMERA VIEWFINDER OVERLAY (Matches ss_01 & ss_05)            -->
+  <!-- ==================================================================== -->
+  <section id="camera-hud" class="hud-layer hidden">
+    <!-- Top Row -->
+    <div class="cam-top-bar">
+      <div class="af-mf-switch">
+        <span class="active">AF</span>
+        <span>MF</span>
+        <div class="switch-knob"></div>
+      </div>
+      <div class="cam-timer-badge">▶ 10S</div>
+      <button class="orange-back-pill" id="btn-close-camera">↩</button>
+    </div>
+
+    <!-- Left Vertical Slider: Aperture f/22 to f/1.4 (Matches ss_01) -->
+    <div class="cam-side-slider left">
+      <span class="cam-scale-label">f/22</span>
+      <input type="range" id="cam-slider-aperture" class="vertical-range" min="1.4" max="22" step="0.2" value="4.4" />
+      <span class="cam-scale-label">f/1.4</span>
+      <div class="cam-readout">
+        <div class="aperture-icon">❂</div>
+        <strong id="cam-aperture-val">f/4.4</strong>
+      </div>
+    </div>
+
+    <!-- Center Autofocus Reticle [ + ] -->
+    <div class="cam-focus-reticle">
+      <span class="corner tl"></span>
+      <span class="corner tr"></span>
+      <span class="corner bl"></span>
+      <span class="corner br"></span>
+      <span class="crosshair">+</span>
+    </div>
+
+    <!-- Right Vertical Slider: Focal Length 24mm to 300mm (Matches ss_01) -->
+    <div class="cam-side-slider right">
+      <span class="cam-scale-label">24mm</span>
+      <input type="range" id="cam-slider-zoom" class="vertical-range" min="24" max="300" step="1" value="94" />
+      <span class="cam-scale-label">300mm</span>
+      <div class="cam-readout">
+        <div class="aperture-icon">🔍</div>
+        <strong id="cam-zoom-val">94mm</strong>
+      </div>
+    </div>
+
+    <!-- Bottom Exposure & Shutter Bar -->
+    <div class="cam-bottom-bar">
+      <div class="cam-filter-btns">
+        <button class="cam-filter-btn active" data-tone="warm" title="Golden Hour Warmth">🎨</button>
+        <button class="cam-filter-btn" data-tone="vivid" title="High-CRI Plant Vivid">💡</button>
+        <button class="cam-filter-btn" data-tone="cinema" title="Moody Biotope Contrast">🎞️</button>
+      </div>
+
+      <div class="cam-iso-control">
+        <div class="iso-readout">☀ <span id="cam-iso-val">ISO 267</span></div>
+        <div class="iso-slider-row">
+          <span>ISO 100</span>
+          <input type="range" id="cam-slider-iso" min="100" max="1600" step="10" value="267" />
+          <span>ISO 1600</span>
+        </div>
+      </div>
+
+      <div class="cam-shutter-group">
+        <button id="btn-cam-shutter" class="shutter-circle-btn" title="Capture Aquarium Snapshot"></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================================== -->
+  <!-- 7. WILD FORAGING MAP & 3D STREAM CATCH (Matches frame_37, 39, 40, ss_10) -->
+  <!-- ==================================================================== -->
+  <section id="foraging-modal" class="modal-backdrop hidden">
+    <div class="foraging-container">
+      <div class="shop-top-bar">
+        <div class="shop-header-badge">
+          <button class="exit-door-btn" id="btn-close-foraging">🏃</button>
+          <div class="shop-title-block">
+            <div class="shop-title-zh">野采地图</div>
+            <div class="shop-title-en">FISHING MAP</div>
+          </div>
+          <div class="forage-weather">☀ 16:11</div>
+        </div>
+        <div class="currency-pill">
+          <span>$:</span>
+          <span id="forage-money">17,324</span>
+        </div>
+      </div>
+
+      <div class="halftone-window map-window">
+        <header class="halftone-header map-header">
+          <div class="lv-block">
+            <span class="lv-num">LV 0<span id="forage-lv">1</span></span>
+            <span class="lv-title">初为鱼佬</span>
+            <div class="lv-progress-bar">
+              <div id="forage-xp-fill" style="width: 25%"></div>
+              <span id="forage-xp-text">5/20</span>
+            </div>
+          </div>
+          <div class="region-pill">近郊河岸与山谷溪流 ▾</div>
+          <div class="stamina-block">
+            <span>💪 <strong id="forage-stamina">99/100</strong></span>
+            <span>🌿 探索度 <strong>24%</strong></span>
+          </div>
+        </header>
+
+        <!-- Styled City River Map with Polaroid Location Cards (Matches frame_37) -->
+        <div class="city-river-map" id="city-river-map">
+          <svg viewBox="0 0 800 420" class="river-map-svg">
+            <rect width="800" height="420" fill="#e5e7eb" />
+            <!-- Green parks -->
+            <polygon points="120,40 340,60 310,220 100,180" fill="#bbf7d0" />
+            <polygon points="520,160 760,120 780,380 490,340" fill="#dcfce7" />
+            <!-- City grid streets -->
+            <g stroke="#ffffff" stroke-width="6" fill="none">
+              <path d="M0 90 L800 130 M0 240 L800 210 M0 350 L800 330" />
+              <path d="M160 0 L120 420 M360 0 L410 420 M610 0 L560 420" />
+            </g>
+            <!-- Winding River -->
+            <path d="M 40,0 Q 260,80 390,190 T 760,420" fill="none" stroke="#93c5fd" stroke-width="46" stroke-linecap="round" />
+            <path d="M 40,0 Q 260,80 390,190 T 760,420" fill="none" stroke="#60a5fa" stroke-width="24" stroke-linecap="round" />
+          </svg>
+          <div id="forage-polaroid-layer" class="forage-polaroid-layer"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3D Stream Dip-Netting Active HUD & Caught Fish Hand Card (Matches frame_40 & ss_10) -->
+  <section id="stream-hud" class="hud-layer hidden">
+    <div class="stream-top-bar">
+      <button class="exit-door-btn" id="btn-exit-stream" title="Return to Tank">🏃</button>
+      <div class="stream-spot-badge" id="stream-spot-title">浅滩 · WILD FORAGING (移动鼠标瞄准，点击左键抄网捕鱼！)</div>
+    </div>
+
+    <div class="stream-watermark">野采 WILD FORAGING</div>
+
+    <!-- Caught Fish Reward Card over First-Person Low-Poly Hand (Matches ss_10!) -->
+    <div id="caught-reward-card" class="caught-reward-card hidden">
+      <div class="caught-header-badge">✨ 恭喜获得 · CAUGHT! ✨</div>
+      <div class="caught-wave-band">
+        <div id="caught-fish-svg" class="caught-fish-svg"></div>
+        <div id="caught-fish-name" class="caught-fish-name">高体鳑鲏 (成鱼)</div>
+        <div id="caught-fish-tags" class="caught-fish-tags"></div>
+      </div>
+      <div class="caught-actions">
+        <button class="glossy-buy-btn" id="btn-keep-caught">➜ 收入当前鱼缸 ·确定</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================================================================== -->
+  <!-- 8. NEIGHBOR OLD SUN VISUAL-NOVEL DIALOGUE BOX (Matches ss_12)        -->
+  <!-- ==================================================================== -->
+  <section id="dialogue-overlay" class="modal-backdrop hidden">
+    <div class="vn-dialogue-stage">
+      <div class="vn-speaker-tag" id="vn-speaker-name">邻居老孙 · Neighbor Old Sun</div>
+      <div class="vn-dialogue-box" id="vn-dialogue-box">
+        <p id="vn-dialogue-text">
+          怎么样，野采有趣吧，自己动手丰衣足食！加上石头草木之后，鱼缸是不是就像点样子了。
+        </p>
+        <div class="vn-next-fish">🐟 点击继续</div>
+      </div>
+    </div>
+  </section>
+
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
